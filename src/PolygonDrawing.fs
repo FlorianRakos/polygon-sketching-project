@@ -65,7 +65,7 @@ For AddPoint mesages, add the point to the current polygon.
  - if there is already a polygon, prepend (or append if you like) it to the list of vertices
 For FinishPolygon mesages:
  - if there is no current polygon (this means right click was used before even adding a single vertex), ignore the message
- - if there is a current polygon, reset the current polygon to None and add the current polygon as a new elemnet to finishedPolygons.
+ - if there is a current polygon,e rset the current polygon to None and add the current polygon as a new elemnet to finishedPolygons.
 *)
 let updateModel (msg : Msg) (model : Model) =
     match msg with
@@ -87,12 +87,23 @@ let addUndoRedo (updateFunction : Msg -> Model -> Model) (msg : Msg) (model : Mo
         // update the mouse position and create a new model.
         { model with mousePos = p }
     | Undo -> 
-        // TODO implement undo logics, HINT: restore the model stored in past, and replace the current
-        // state with it.
-        model
+        match model.past with
+        | None -> model
+        | Some _ -> 
+            { model with 
+                finishedPolygons = model.past.Value.finishedPolygons;
+                currentPolygon = model.past.Value.currentPolygon;
+                past = model.past.Value.past;
+                future = Some model }
     | Redo -> 
-        // TODO: same as undo
-        model
+        match model.future with
+        | None -> model // nothing to redo
+        | Some _ ->
+            { model with
+                finishedPolygons = model.future.Value.finishedPolygons;
+                currentPolygon = model.future.Value.currentPolygon;
+                future = model.future.Value.future;
+                past = Some model  }
     | _ -> 
         // use the provided update function for all remaining messages
         { updateFunction msg model with past = Some model }
