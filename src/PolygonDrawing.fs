@@ -47,8 +47,13 @@ type Msg =
 // creates the initial model, which is used when creating the interactive application (see Main.fs)
 let init () =
     let m = 
-        { finishedPolygons = []; currentPolygon = None; // records can be written multiline
-          mousePos = None ; past = None; future = None }
+        {
+        finishedPolygons = [];
+        currentPolygon = None; // records can be written multiline
+        mousePos = None ;
+        past = None;
+        future = None
+        }
     m, Cmd.none // Cmd is optionally to explicitly represent side-effects in a safe manner (here we don't bother)
 
 
@@ -63,7 +68,15 @@ For FinishPolygon mesages:
  - if there is a current polygon, reset the current polygon to None and add the current polygon as a new elemnet to finishedPolygons.
 *)
 let updateModel (msg : Msg) (model : Model) =
-    model
+    match msg with
+    | AddPoint p -> match model.currentPolygon with
+        | None -> { model with currentPolygon = Some [p] }
+        | Some poly -> {model with currentPolygon = Some (p :: poly) }
+    | FinishPolygon -> match model.currentPolygon with
+        | None -> model
+        | Some poly -> { model with 
+                            currentPolygon = None; 
+                            finishedPolygons = poly :: model.finishedPolygons }
 
 // wraps an update function with undo/redo.
 let addUndoRedo (updateFunction : Msg -> Model -> Model) (msg : Msg) (model : Model) =
