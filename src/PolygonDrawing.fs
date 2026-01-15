@@ -57,20 +57,13 @@ let init () =
     m, Cmd.none // Cmd is optionally to explicitly represent side-effects in a safe manner (here we don't bother)
 
 
-(*
-TODO: implement the core logics of the drawing app, which means:
-Depending on the message,
-For AddPoint mesages, add the point to the current polygon.
- - if there is no current polygon yet, create a new one with this point as its only vertex.
- - if there is already a polygon, prepend (or append if you like) it to the list of vertices
-For FinishPolygon mesages:
- - if there is no current polygon (this means right click was used before even adding a single vertex), ignore the message
- - if there is a current polygon,e rset the current polygon to None and add the current polygon as a new elemnet to finishedPolygons.
-*)
+// Update model
 let updateModel (msg : Msg) (model : Model) =
     match msg with
     | AddPoint p -> match model.currentPolygon with
-        | None -> { model with currentPolygon = Some [p] }
+        | None -> { model with 
+            currentPolygon = Some [p]
+            future = None }
         | Some poly -> {model with currentPolygon = Some (p :: poly) }
     | FinishPolygon -> match model.currentPolygon with
         | None -> model
